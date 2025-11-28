@@ -239,208 +239,8 @@ export default function ChatUI({ persona }: ChatUIProps) {
 
   return (
     <>
-    <div className="hidden w-full max-w-4xl mx-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-300">
     
-      {/* Header */}
-<div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white flex items-center justify-between">
-  <div className="flex items-center gap-3">
-    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-    <h1 className="text-xl font-bold">AI Assistant</h1>
-  </div>
-
-  {/* Right side: Export + Persona + New Chat */}
-  <div className="flex items-center gap-3">
-    <ChatExport chatRef={chatRef} />
-    {persona && (
-      <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{persona}</span>
-    )}
-
-    <button
-      onClick={() => {
-        setMessages([]);        // Clear all messages
-        setInput("");           // Clear input box
-        setSelectedFile(null);  // Clear any selected file
-        messagesEndRef.current?.scrollIntoView({ behavior: "auto" }); // Scroll to top
-      }}
-      className="bg-white/20 text-sm px-3 py-1 rounded-full hover:bg-white/30 transition-colors"
-      title="Start a new chat"
-    >
-      🔄 New Chat
-    </button>
-  </div>
-</div>
-
-
-      {/* Messages Container */}
-      <div
-        ref={chatRef}
-        className="h-96 overflow-y-auto p-6 space-y-4 bg-white/80 dark:bg-gray-900/80"
-      >
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center">
-                <span className="text-2xl">💬</span>
-              </div>
-              <p className="text-lg font-medium">Start a conversation</p>
-              <p className="text-sm">Ask me anything!</p>
-            </div>
-          </div>
-        ) : (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                msg.sender === "user" ? "justify-end" : "justify-start"
-              } group relative`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl p-4 shadow-sm relative ${
-                  msg.sender === "user"
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-br-none"
-                    : msg.isError
-                    ? "bg-red-50 border border-red-200 text-red-800 rounded-bl-none"
-                    : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 rounded-bl-none"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {msg.sender === "bot" && !msg.isError && (
-                    <div className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-xs text-white font-bold mt-1 flex-shrink-0">
-                      AI
-                    </div>
-                  )}
-                  {msg.sender === "user" && (
-                    <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-bold mt-1 flex-shrink-0">
-                      You
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    {msg.isLoading ? (
-                      <div className="flex space-x-2">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.1s" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <p className="whitespace-pre-wrap">{msg.text}</p>
-                        {msg.sender === "bot" && (
-                          <TextToSpeech text={msg.text} />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Copy Button */}
-                {msg.sender === "bot" &&
-                  !msg.isLoading &&
-                  !msg.isError &&
-                  msg.text && (
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <CopyButton text={msg.text} />
-                    </div>
-                  )}
-              </div>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input & Actions */}
-      <div className="border-t border-gray-200 bg-white dark:bg-gray-900 p-6">
-     
-<div className="flex flex-col sm:flex-row gap-3 items-center">
-  <div className="flex-1 relative w-full">
-    {/* Input box container */}
-    <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition-all duration-200">
-      
-      {/* File upload inside input box */}
-      <div className="mr-2 flex-shrink-0">
-        <FileUpload onFileSelect={handleFileSelect} />
-      </div>
-
-      {/* Text input */}
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Type your message..."
-        disabled={isLoading}
-        className="flex-1 bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-500 focus:outline-none"
-      />
-
-      {/* Clear input button */}
-      {input && (
-        <button
-          onClick={() => setInput("")}
-          className="text-gray-400 hover:text-gray-600 ml-2"
-        >
-          ✕
-        </button>
-      )}
-    </div>
-
-    {/* ✅ File preview appears here below input */}
-    {selectedFile && (
-      <div className="flex items-center gap-2 text-xs mt-2 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-        📎 {selectedFile.name}
-        <button
-          onClick={() => setSelectedFile(null)}
-          className="text-blue-400 hover:text-blue-600"
-        >
-          ✕
-        </button>
-      </div>
-    )}
-  </div>
-
-  {/* Send button */}
-  <button
-    onClick={sendMessage}
-    disabled={(!input.trim() && !selectedFile) || isLoading}
-    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-2xl font-medium hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
-  >
-    {isLoading ? (
-      <>
-        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-        Sending...
-      </>
-    ) : (
-      <>
-        <span>Send</span>
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-          />
-        </svg>
-      </>
-    )}
-  </button>
-</div>
-
-
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
-          Press Enter to send • Shift + Enter for new line
-        </p>
-      </div>
-    </div>
-    <div className="w-full max-w-4xl mx-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-300">
+    <div className="hidden w-full max-w-4xl mx-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-300">
   
   {/* Header */}
   <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white flex items-center justify-between">
@@ -643,6 +443,209 @@ export default function ChatUI({ persona }: ChatUIProps) {
     </p>
   </div>
 </div>
+
+{/* Chat Container */}
+<div className="w-full max-w-4xl mx-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-300">
+
+  {/* Header */}
+  <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 sm:p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+    <div className="flex items-center gap-2 sm:gap-3">
+      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
+      <h1 className="text-lg sm:text-xl font-bold">AI Assistant</h1>
+    </div>
+
+    {/* Right side: Export + Persona + New Chat */}
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <ChatExport chatRef={chatRef} />
+      {persona && (
+        <span className="bg-white/20 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
+          {persona}
+        </span>
+      )}
+
+      <button
+        onClick={() => {
+          setMessages([]);
+          setInput("");
+          setSelectedFile(null);
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }}
+        className="bg-white/20 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full hover:bg-white/30 transition-colors flex items-center gap-1 sm:gap-2"
+        title="Start a new chat"
+      >
+        <span>🔄</span>
+        <span>New Chat</span>
+      </button>
+    </div>
+  </div>
+
+  {/* Messages Container */}
+  <div
+    ref={chatRef}
+    className="h-[70vh] sm:h-96 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white/80 dark:bg-gray-900/80 scroll-smooth"
+  >
+    {messages.length === 0 ? (
+      <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+        <div className="text-center space-y-3 sm:space-y-4">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center">
+            <span className="text-2xl sm:text-3xl">💬</span>
+          </div>
+          <div className="space-y-1 sm:space-y-2">
+            <p className="text-base sm:text-lg font-medium">Start a conversation</p>
+            <p className="text-sm">Ask me anything or upload a file to get started!</p>
+          </div>
+        </div>
+      </div>
+    ) : (
+      messages.map((msg, index) => (
+        <div
+          key={index}
+          className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"} group relative`}
+        >
+          <div
+            className={`max-w-[90%] sm:max-w-[85%] rounded-2xl p-3 sm:p-4 shadow-sm relative text-sm sm:text-base ${
+              msg.sender === "user"
+                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-br-none"
+                : msg.isError
+                ? "bg-red-50 border border-red-200 text-red-800 rounded-bl-none"
+                : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 rounded-bl-none"
+            }`}
+          >
+            <div className="flex items-start gap-2 sm:gap-3">
+              {msg.sender === "bot" && !msg.isError && (
+                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-[10px] sm:text-xs text-white font-bold mt-0.5 flex-shrink-0">
+                  AI
+                </div>
+              )}
+              {msg.sender === "user" && (
+                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white/20 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold mt-0.5 flex-shrink-0">
+                  You
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                {msg.isLoading ? (
+                  <div className="flex space-x-1 sm:space-x-2 py-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-1 sm:gap-2">
+                    <div className="flex-1">
+                      <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                    </div>
+                    {msg.sender === "bot" && !msg.isError && (
+                      <div className="flex-shrink-0">
+                        <TextToSpeech text={msg.text} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Copy Button */}
+            {msg.sender === "bot" && !msg.isLoading && !msg.isError && msg.text && (
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <CopyButton text={msg.text} />
+              </div>
+            )}
+          </div>
+        </div>
+      ))
+    )}
+    <div ref={messagesEndRef} />
+  </div>
+
+  {/* Input & Actions */}
+  <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 sm:p-6">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-start">
+      <div className="flex-1 relative w-full">
+        {/* Input box container */}
+        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 px-3 sm:px-4 py-2 sm:py-3 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all duration-200 shadow-sm">
+          
+          {/* File upload inside input box */}
+          <div className="mr-2 sm:mr-3 flex-shrink-0">
+            <FileUpload onFileSelect={handleFileSelect} />
+          </div>
+
+          {/* Text input */}
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            disabled={isLoading}
+            className="flex-1 bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none text-sm sm:text-base"
+          />
+
+          {/* Clear input button */}
+          {input && (
+            <button
+              onClick={() => setInput("")}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-2 sm:ml-3 transition-colors p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+              title="Clear input"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* File preview below input */}
+        {selectedFile && (
+          <div className="flex items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-3 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <span>📎</span>
+            <span className="flex-1 truncate">{selectedFile.name}</span>
+            <button
+              onClick={() => setSelectedFile(null)}
+              className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition-colors p-1 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
+              title="Remove file"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Send button */}
+      <button
+        onClick={sendMessage}
+        disabled={(!input.trim() && !selectedFile) || isLoading}
+        className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 sm:px-8 py-3 rounded-2xl font-medium hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+      >
+        {isLoading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>Sending...</span>
+          </>
+        ) : (
+          <>
+            <span>Send</span>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+          </>
+        )}
+      </button>
+    </div>
+
+    <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 sm:mt-4">
+      Press <kbd className="font-semibold">Enter</kbd> to send •{" "}
+      <kbd className="font-semibold">Shift + Enter</kbd> for new line
+    </p>
+  </div>
+</div>
+
     </>
     
   );
