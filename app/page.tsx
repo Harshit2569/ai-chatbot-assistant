@@ -303,16 +303,19 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-black text-white">
-      {/* Sidebar */}
+    <div className="min-h-screen flex flex-col md:flex-row bg-black text-white">
+      
+      {/* Sidebar (desktop) */}
       <aside
         onMouseEnter={() => setIsSidebarOpen(true)}
         onMouseLeave={() => setIsSidebarOpen(false)}
-        className={`bg-gray-900 border-r border-gray-800 transition-all duration-300 ease-in-out
-          ${isSidebarOpen ? "w-56" : "w-16"} flex flex-col items-center py-6`}
+        className={`hidden md:flex bg-gray-900 border-r border-gray-800 
+          transition-all duration-300 ease-in-out
+          ${isSidebarOpen ? "w-56" : "w-16"} 
+          flex-col items-center py-6`}
       >
         <div className="text-xl font-bold mb-10">
-          <span className={`${!isSidebarOpen && "hidden"} md:inline text-[8px]`}>AI CHAT</span>
+          <span className={`${!isSidebarOpen && "hidden"} text-[8px]`}>AI CHAT</span>
         </div>
 
         <nav className="flex flex-col gap-6">
@@ -323,18 +326,27 @@ export default function Home() {
         </nav>
       </aside>
 
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-gray-900 border-t border-gray-800 flex justify-between px-6 py-3">
+        <SidebarItem icon={<HomeIcon />} label="Home" open={false} />
+        <SidebarItem icon={<MessageSquare />} label="Chat" open={false} />
+        <SidebarItem icon={<Info />} label="About" open={false}  />
+        <SidebarItem icon={<Settings />} label="Settings" open={false}/>
+      </div>
+
       {/* Main Chat Section */}
-      <main className="flex-1 py-6 px-3 sm:px-6 lg:px-8 flex justify-center items-start">
-        <div className="max-w-4xl w-full">
+      <main className="flex-1 py-4 px-3 sm:px-6 lg:px-8 flex justify-center items-start mb-16 md:mb-0">
+        <div className="w-full max-w-4xl">
+
           {/* Header Section */}
           <div
-            className={`text-center mb-8 transition-all duration-700 transform ${
+            className={`text-center mb-6 sm:mb-8 transition-all duration-700 transform ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
             }`}
           >
-            <div className="flex flex-col items-center justify-center gap-3 mb-4">
-              <h1 className="text-lg font-bold text-white tracking-wide">
-               AI CHAT ASSISANT
+            <div className="flex flex-col items-center gap-3 mb-4">
+              <h1 className="text-lg sm:text-xl font-bold tracking-wide text-white">
+                AI CHAT ASSISTANT
               </h1>
               <p className="text-gray-400 text-sm sm:text-base">
                 Your intelligent chat assistant
@@ -343,7 +355,7 @@ export default function Home() {
           </div>
 
           {/* Chat UI */}
-          <div className="bg-gray-950 rounded-2xl shadow-2xl overflow-hidden border border-gray-800 p-4 sm:p-6">
+          <div className="bg-gray-950 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-800 p-3 sm:p-6">
             <ChatUI persona={persona} />
           </div>
         </div>

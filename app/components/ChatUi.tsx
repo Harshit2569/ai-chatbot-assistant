@@ -650,6 +650,297 @@ const CopyButton = ({ text }: { text: string }) => {
     
 //   );
 // }
+// export default function ChatUI({ persona }: ChatUIProps) {
+//   const [input, setInput] = useState<string>("");
+//   const [isLoading, setIsLoading] = useState<boolean>(false);
+//   const [isMounted, setIsMounted] = useState(false);
+//   const [selectedFile, setSelectedFile] = useState<{ name: string; text: string } | null>(null);
+
+//   // Initialize with empty array on server, use chat memory only on client
+//   const [messages, setMessages] = useChatMemory<Message[]>("chat-history", []);
+//   const chatRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+
+//   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+//   // Set mounted state and scroll to bottom
+//   useEffect(() => {
+//     setIsMounted(true);
+//   }, []);
+
+//   useEffect(() => {
+//     if (isMounted) {
+//       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+//     }
+//   }, [messages, isMounted]);
+
+//   const sendMessage = async () => {
+//     if ((!input.trim() && !selectedFile) || isLoading) return;
+
+//     setIsLoading(true);
+
+//     // Prepare message content
+//     const userMessage = selectedFile
+//       ? `📎 Uploaded ${selectedFile.name}: ${selectedFile.text.slice(0, 300)}...`
+//       : input;
+
+//     // Optimistic UI update (instant feedback)
+//     setMessages((prev) => [
+//       ...prev,
+//       { sender: "user", text: userMessage },
+//       { sender: "bot", text: "", isLoading: true },
+//     ]);
+
+//     // Clear input and file preview
+//     setInput("");
+//     setSelectedFile(null);
+
+//     try {
+//       const res = await fetch("/api/chat", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           message: userMessage,
+//           persona,
+//         }),
+//       });
+
+//       const data = await res.json();
+
+//       setMessages((prev) => [
+//         ...prev.slice(0, -1),
+//         { sender: "bot", text: data.reply, isLoading: false },
+//       ]);
+//     } catch (error) {
+//       console.error("Chat API error:", error);
+//       setMessages((prev) => [
+//         ...prev.slice(0, -1),
+//         {
+//           sender: "bot",
+//           text: "⚠️ Sorry, I encountered an error. Please try again.",
+//           isError: true,
+//         },
+//       ]);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const handleKeyDown = (e: React.KeyboardEvent) => {
+//     if (e.key === "Enter" && !e.shiftKey) {
+//       e.preventDefault();
+//       sendMessage();
+//     }
+//   };
+
+//   const handleFileSelect = (text: string, fileName: string) => {
+//     setSelectedFile({ name: fileName, text });
+//   };
+
+//   // Show loading state during SSR and initial hydration
+//   if (!isMounted) {
+//     return (
+//       <div className="w-full bg-white rounded-lg border border-gray-200">
+//         {/* Header */}
+//         <div className="bg-white px-6 py-4 border-b border-gray-200">
+//           <div className="flex items-center justify-between">
+//             <h2 className="text-black font-semibold text-lg">AI Chat</h2>
+//             <div className="flex items-center gap-2">
+//               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//               <span className="text-green-600 text-sm">Online</span>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Loading State */}
+//         <div className="h-96 p-6 bg-white flex items-center justify-center">
+//           <div className="text-center text-gray-500">
+//             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+//               <span className="text-2xl">💬</span>
+//             </div>
+//             <p className="text-lg font-medium">Loading chat...</p>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="w-full bg-white rounded-lg border border-gray-200">
+//       {/* Header - Simple Style */}
+//       <div className="bg-white px-6 py-4 border-b border-gray-200">
+//         <div className="flex items-center justify-between">
+//           <div className="flex items-center gap-3">
+//             <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+//               <span className="text-white font-bold text-sm">AI</span>
+//             </div>
+//             <div>
+//               <h2 className="text-black font-semibold text-lg">AI Chat Assistant</h2>
+//               <p className="text-gray-500 text-sm">Ask me anything</p>
+//             </div>
+//           </div>
+//           <div className="flex items-center gap-3">
+//             <div className="flex items-center gap-2">
+//               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//               <span className="text-green-600 text-sm">Online</span>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Messages Container */}
+//       <div
+//         ref={chatRef}
+//         className="h-[500px] overflow-y-auto p-6 space-y-4 bg-white scroll-smooth"
+//       >
+//         {messages.length === 0 ? (
+//           <div className="flex flex-col items-center justify-center h-full text-gray-500">
+//             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+//               <span className="text-3xl">💬</span>
+//             </div>
+//             <h3 className="text-xl font-semibold text-black mb-2">Start a conversation</h3>
+//             <p className="text-gray-500 text-center max-w-md">
+//               I'm here to help! Ask me anything or upload a file to get started.
+//             </p>
+//           </div>
+//         ) : (
+//           messages.map((msg, index) => (
+//             <div
+//               key={index}
+//               className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"} group relative`}
+//             >
+//               <div
+//                 className={`max-w-[80%] rounded-2xl p-4 relative ${
+//                   msg.sender === "user"
+//                     ? "bg-black text-white rounded-br-none"
+//                     : msg.isError
+//                     ? "bg-red-50 border border-red-200 text-red-800 rounded-bl-none"
+//                     : "bg-gray-100 text-black border border-gray-200 rounded-bl-none"
+//                 }`}
+//               >
+//                 <div className="flex items-start gap-3">
+//                   {msg.sender === "bot" && !msg.isError && (
+//                     <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+//                       AI
+//                     </div>
+//                   )}
+//                   {msg.sender === "user" && (
+//                     <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+//                       You
+//                     </div>
+//                   )}
+//                   <div className="flex-1 min-w-0">
+//                     {msg.isLoading ? (
+//                       <div className="flex space-x-2 py-1">
+//                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+//                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+//                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+//                       </div>
+//                     ) : (
+//                       <div className="flex items-start gap-2">
+//                         <div className="flex-1">
+//                           <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+//                         </div>
+//                         {msg.sender === "bot" && !msg.isError && (
+//                           <div className="flex-shrink-0">
+//                             <TextToSpeech text={msg.text} />
+//                           </div>
+//                         )}
+//                       </div>
+//                     )}
+//                   </div>
+//                 </div>
+
+//                 {/* Copy Button */}
+//                 {msg.sender === "bot" && !msg.isLoading && !msg.isError && msg.text && (
+//                   <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+//                     <CopyButton text={msg.text} />
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           ))
+//         )}
+//         <div ref={messagesEndRef} />
+//       </div>
+
+//       {/* Input Area - Simple Style */}
+//       <div className="bg-white px-6 py-4 border-t border-gray-200">
+//         {/* File Preview */}
+//         {selectedFile && (
+//           <div className="flex items-center gap-2 text-sm mb-3 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+//             <span>📎</span>
+//             <span className="flex-1 truncate">{selectedFile.name}</span>
+//             <button
+//               onClick={() => setSelectedFile(null)}
+//               className="text-blue-500 hover:text-blue-700 transition-colors p-1 rounded-full hover:bg-blue-100"
+//               title="Remove file"
+//             >
+//               ✕
+//             </button>
+//           </div>
+//         )}
+
+//         <div className="flex gap-3">
+//           {/* File Upload Button */}
+//           <div className="flex-shrink-0">
+//             <FileUpload onFileSelect={handleFileSelect} />
+//           </div>
+
+//           {/* Input Field */}
+//           <input
+//             value={input}
+//             onChange={(e) => setInput(e.target.value)}
+//             onKeyDown={handleKeyDown}
+//             placeholder="Type your message here..."
+//             disabled={isLoading}
+//             className="flex-1 bg-white border border-gray-300 rounded-xl px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:border-black transition-colors"
+//           />
+
+//           {/* Send Button */}
+//           <button
+//             onClick={sendMessage}
+//             disabled={(!input.trim() && !selectedFile) || isLoading}
+//             className="bg-black text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+//           >
+//             {isLoading ? (
+//               <>
+//                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+//                 <span>Sending...</span>
+//               </>
+//             ) : (
+//               <>
+//                 <span>Send</span>
+//                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+//                 </svg>
+//               </>
+//             )}
+//           </button>
+//         </div>
+
+//         {/* Quick Actions */}
+//         <div className="flex flex-wrap gap-2 mt-3">
+//           {[
+//             "Help me code",
+//             "Explain this",
+//             "Fix this bug",
+//             "Optimize this"
+//           ].map((action, index) => (
+//             <button
+//               key={index}
+//               onClick={() => setInput(action)}
+//               className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-2 rounded-lg border border-gray-300 transition-colors"
+//             >
+//               {action}
+//             </button>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
 export default function ChatUI({ persona }: ChatUIProps) {
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -741,7 +1032,7 @@ export default function ChatUI({ persona }: ChatUIProps) {
     return (
       <div className="w-full bg-white rounded-lg border border-gray-200">
         {/* Header */}
-        <div className="bg-white px-6 py-4 border-b border-gray-200">
+        <div className="bg-white px-4 sm:px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-black font-semibold text-lg">AI Chat</h2>
             <div className="flex items-center gap-2">
@@ -752,12 +1043,12 @@ export default function ChatUI({ persona }: ChatUIProps) {
         </div>
 
         {/* Loading State */}
-        <div className="h-96 p-6 bg-white flex items-center justify-center">
+        <div className="h-64 sm:h-96 p-4 sm:p-6 bg-white flex items-center justify-center">
           <div className="text-center text-gray-500">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl">💬</span>
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <span className="text-xl sm:text-2xl">💬</span>
             </div>
-            <p className="text-lg font-medium">Loading chat...</p>
+            <p className="text-base sm:text-lg font-medium">Loading chat...</p>
           </div>
         </div>
       </div>
@@ -765,23 +1056,25 @@ export default function ChatUI({ persona }: ChatUIProps) {
   }
 
   return (
-    <div className="w-full bg-white rounded-lg border border-gray-200">
-      {/* Header - Simple Style */}
-      <div className="bg-white px-6 py-4 border-b border-gray-200">
+    <div className="w-full bg-white rounded-lg border border-gray-200 max-w-full mx-auto">
+      {/* Header - Responsive Style */}
+      <div className="bg-white px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-xs sm:text-sm">AI</span>
             </div>
-            <div>
-              <h2 className="text-black font-semibold text-lg">AI Chat Assistant</h2>
-              <p className="text-gray-500 text-sm">Ask me anything</p>
+            <div className="min-w-0">
+              <h2 className="text-black font-semibold text-base sm:text-lg truncate">
+                AI Chat Assistant
+              </h2>
+              <p className="text-gray-500 text-xs sm:text-sm truncate">Ask me anything</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-green-600 text-sm">Online</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+              <span className="text-green-600 text-xs sm:text-sm hidden xs:inline">Online</span>
             </div>
           </div>
         </div>
@@ -790,15 +1083,17 @@ export default function ChatUI({ persona }: ChatUIProps) {
       {/* Messages Container */}
       <div
         ref={chatRef}
-        className="h-[500px] overflow-y-auto p-6 space-y-4 bg-white scroll-smooth"
+        className="h-[400px] sm:h-[500px] overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4 bg-white scroll-smooth"
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-              <span className="text-3xl">💬</span>
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 px-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+              <span className="text-2xl sm:text-3xl">💬</span>
             </div>
-            <h3 className="text-xl font-semibold text-black mb-2">Start a conversation</h3>
-            <p className="text-gray-500 text-center max-w-md">
+            <h3 className="text-lg sm:text-xl font-semibold text-black mb-2 text-center">
+              Start a conversation
+            </h3>
+            <p className="text-gray-500 text-center text-sm sm:text-base max-w-xs sm:max-w-md">
               I'm here to help! Ask me anything or upload a file to get started.
             </p>
           </div>
@@ -809,7 +1104,7 @@ export default function ChatUI({ persona }: ChatUIProps) {
               className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"} group relative`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl p-4 relative ${
+                className={`max-w-[90%] xs:max-w-[85%] sm:max-w-[80%] rounded-2xl p-3 sm:p-4 relative ${
                   msg.sender === "user"
                     ? "bg-black text-white rounded-br-none"
                     : msg.isError
@@ -817,31 +1112,31 @@ export default function ChatUI({ persona }: ChatUIProps) {
                     : "bg-gray-100 text-black border border-gray-200 rounded-bl-none"
                 }`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2 sm:gap-3">
                   {msg.sender === "bot" && !msg.isError && (
-                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-black rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
                       AI
                     </div>
                   )}
                   {msg.sender === "user" && (
-                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-600 rounded-full flex items-center justify-center text-xs text-white font-bold flex-shrink-0">
                       You
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     {msg.isLoading ? (
                       <div className="flex space-x-2 py-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                       </div>
                     ) : (
-                      <div className="flex items-start gap-2">
-                        <div className="flex-1">
-                          <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                      <div className="flex items-start gap-1 sm:gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="whitespace-pre-wrap break-words text-sm sm:text-base">{msg.text}</p>
                         </div>
                         {msg.sender === "bot" && !msg.isError && (
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0 mt-1">
                             <TextToSpeech text={msg.text} />
                           </div>
                         )}
@@ -852,7 +1147,7 @@ export default function ChatUI({ persona }: ChatUIProps) {
 
                 {/* Copy Button */}
                 {msg.sender === "bot" && !msg.isLoading && !msg.isError && msg.text && (
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <CopyButton text={msg.text} />
                   </div>
                 )}
@@ -863,24 +1158,24 @@ export default function ChatUI({ persona }: ChatUIProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - Simple Style */}
-      <div className="bg-white px-6 py-4 border-t border-gray-200">
+      {/* Input Area - Responsive Style */}
+      <div className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
         {/* File Preview */}
         {selectedFile && (
-          <div className="flex items-center gap-2 text-sm mb-3 px-4 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
-            <span>📎</span>
-            <span className="flex-1 truncate">{selectedFile.name}</span>
+          <div className="flex items-center gap-2 text-xs sm:text-sm mb-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+            <span className="flex-shrink-0">📎</span>
+            <span className="flex-1 truncate text-xs sm:text-sm">{selectedFile.name}</span>
             <button
               onClick={() => setSelectedFile(null)}
-              className="text-blue-500 hover:text-blue-700 transition-colors p-1 rounded-full hover:bg-blue-100"
+              className="text-blue-500 hover:text-blue-700 transition-colors p-1 rounded-full hover:bg-blue-100 flex-shrink-0"
               title="Remove file"
             >
-              ✕
+              <span className="text-xs">✕</span>
             </button>
           </div>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           {/* File Upload Button */}
           <div className="flex-shrink-0">
             <FileUpload onFileSelect={handleFileSelect} />
@@ -893,24 +1188,26 @@ export default function ChatUI({ persona }: ChatUIProps) {
             onKeyDown={handleKeyDown}
             placeholder="Type your message here..."
             disabled={isLoading}
-            className="flex-1 bg-white border border-gray-300 rounded-xl px-4 py-3 text-black placeholder-gray-500 focus:outline-none focus:border-black transition-colors"
+            className="flex-1 bg-white border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-black placeholder-gray-500 focus:outline-none focus:border-black transition-colors text-sm sm:text-base min-w-0"
           />
 
           {/* Send Button */}
           <button
             onClick={sendMessage}
             disabled={(!input.trim() && !selectedFile) || isLoading}
-            className="bg-black text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-black text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2 flex-shrink-0 min-w-[70px] sm:min-w-[100px] justify-center"
           >
             {isLoading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Sending...</span>
+                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                <span className="hidden xs:inline text-xs sm:text-sm">Sending...</span>
+                <span className="xs:hidden text-xs">...</span>
               </>
             ) : (
               <>
-                <span>Send</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="hidden sm:inline">Send</span>
+                <span className="sm:hidden text-xs">Send</span>
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               </>
@@ -919,7 +1216,7 @@ export default function ChatUI({ persona }: ChatUIProps) {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3 justify-center sm:justify-start">
           {[
             "Help me code",
             "Explain this",
@@ -929,7 +1226,7 @@ export default function ChatUI({ persona }: ChatUIProps) {
             <button
               key={index}
               onClick={() => setInput(action)}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-2 rounded-lg border border-gray-300 transition-colors"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2 sm:px-3 py-1.5 sm:py-2 rounded border border-gray-300 transition-colors whitespace-nowrap flex-shrink-0"
             >
               {action}
             </button>
