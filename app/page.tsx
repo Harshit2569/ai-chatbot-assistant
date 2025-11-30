@@ -315,7 +315,7 @@ export default function Home() {
           flex-col items-center py-6`}
       >
         <div className="text-xl font-bold mb-10">
-          <span className={`${!isSidebarOpen && "hidden"} text-[8px]`}>AI CHAT</span>
+          <span className={`${!isSidebarOpen} text-[9px]`}>AI CHAT</span>
         </div>
 
         <nav className="flex flex-col gap-6">

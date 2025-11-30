@@ -5,13 +5,8 @@ The chatbot supports multiple personas, voice input, image and file message supp
 
 🚀 Features
 
-🧠 Multiple Personas – Choose from different AI personalities (e.g., Friendly, Professional, Technical).
 
 ⚡ Gemini AI Integration – Powered by Google’s Gemini model for natural and multimodal conversations.
-
-🎤 Voice Input – Speak directly to your AI using speech-to-text.
-
-🖼️ Image Upload – Send images and get visual-context responses.
 
 📄 File Upload – Share files (PDFs, docs, etc.) for AI analysis and responses.
 
@@ -21,7 +16,6 @@ The chatbot supports multiple personas, voice input, image and file message supp
 
 📋 Copy Responses – Quickly copy AI replies with one click.
 
-📤 Chat Export – Export your chat history as text or PDF for record-keeping.
 
 ✨ Optimistic UI Updates – Smooth transitions and loading animations.
 
@@ -76,9 +70,6 @@ Open http://localhost:3000 in your browser.
 
 Start a Chat: Select an AI persona and start messaging.
 
-Voice Input: Click the microphone icon to speak to the AI.
-
-Image Upload: Click the image icon to send images.
 
 File Upload: Click the file icon to send PDFs, Word docs, etc.
 
@@ -86,4 +77,3 @@ New Chat: Click the “New Chat” button to reset conversation.
 
 Copy Responses: Click the copy icon next to AI replies.
 
-Export Chat: Click “Export Chat” to download conversation as text or PDF.
